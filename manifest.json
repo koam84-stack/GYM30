@@ -1,0 +1,19 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "koam84-stack.github",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "koam84-stack.github",
+  "start_url": "/",
+  "theme_color": "#ffffff",
+  "categories": [
+    "fitness",
+    "health",
+    "lifestyle",
+    "personalization",
+    "sports",
+    "utilities"
+  ]
+}
