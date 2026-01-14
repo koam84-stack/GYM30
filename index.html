@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GYM30 by Koussy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&family=JetBrains+Mono:wght@800&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .date-active { background-color: #2563eb !important; color: white !important; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
+        
+        .ex-done { border-color: #10b981 !important; background-color: #f0fdf4 !important; opacity: 0.9; }
+        .ex-done h4 { color: #059669 !important; }
+        
+        .ex-active { 
+            border-color: #3b82f6 !important; 
+            background-color: #eff6ff !important; 
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+            animation: pulse-border 2s infinite;
+        }
+
+        @keyframes pulse-border {
+            0% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0); }
+            100% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0); }
+        }
+
+        .timer-card { background: #0f172a; }
+        .transition-all-custom { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        
+        .section-overlay { transition: all 0.4s ease; max-height: 0; opacity: 0; overflow: hidden; }
+        .section-overlay.active { max-height: 1500px; opacity: 1; padding-bottom: 2rem; }
+        
+        .day-checkbox {
+            appearance: none;
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+        .day-checkbox:checked {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        .day-checkbox:checked::after {
+            content: '✓';
+            color: white;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="p-2 md:p-6 flex flex-col items-center min-h-screen">
+
+    <div class="max-w-md w-full bg-white rounded-[2.5rem] shadow-2xl overflow-hidden border border-slate-200 flex flex-col relative">
+        
+        <!-- Barre de navigation -->
+        <div class="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-white sticky top-0 z-40">
+            <div class="flex items-center gap-2">
+                <span class="font-black text-xl tracking-tighter text-slate-800 uppercase">GYM<span class="text-blue-600">30</span></span>
+            </div>
+            <button onclick="toggleMenu()" class="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-500">
+                <svg id="menu-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+                </svg>
+            </button>
+        </div>
+
+        <!-- Menu principal -->
+        <div id="main-menu" class="max-h-0 overflow-hidden transition-all-custom bg-slate-50 border-b border-slate-100 z-30">
+            <div class="p-4 grid grid-cols-1 gap-2">
+                <button onclick="showSection('config')" class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-700">
+                    <span>⚙️</span> Configurer Profil
+                </button>
+                <button onclick="showSection('about')" class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-700">
+                    <span>📖</span> À propos de l'App
+                </button>
+                <button onclick="showSection('contact')" class="flex items-center gap-3 p-3 bg-white border border-slate-100 rounded-xl text-sm font-bold text-slate-700">
+                    <span>📧</span> Contact
+                </button>
+            </div>
+        </div>
+
+        <!-- Contenu des sections -->
+        <div class="overflow-y-auto">
+            <div id="section-config" class="section-overlay px-6 bg-white border-b border-slate-100">
+                <div class="pt-6 space-y-4">
+                    <h3 class="text-xs font-black text-blue-600 uppercase tracking-widest">Informations Utilisateur</h3>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Âge</label>
+                            <input type="number" id="p-age" value="00" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Poids (kg)</label>
+                            <input type="number" id="p-weight" value="00" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 block mb-1 uppercase">Niveau de difficulté</label>
+                        <select id="p-level" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm outline-none">
+                            <option value="debutant">Débutant</option>
+                            <option value="moyen" selected>Intermédiaire</option>
+                            <option value="expert">Expert</option>
+                        </select>
+                    </div>
+
+                    <div class="pt-2">
+                        <label class="text-[10px] font-bold text-slate-400 block mb-3 uppercase tracking-widest">Jours d'entraînement</label>
+                        <div class="grid grid-cols-1 gap-2 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                            <div id="days-selector-container" class="space-y-2"></div>
+                        </div>
+                    </div>
+
+                    <button onclick="saveProfile()" class="w-full bg-blue-600 text-white font-black p-4 rounded-2xl uppercase text-[10px] tracking-widest shadow-lg">Enregistrer</button>
+                </div>
+            </div>
+
+            <div id="section-about" class="section-overlay px-6 bg-slate-50 border-b border-slate-100">
+                <div class="pt-6 space-y-4">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest">Présentation du Programme</h3>
+                    <div class="space-y-3 text-[11px] text-slate-700 leading-relaxed text-justify">
+                        <p><strong>GYM30</strong> est une application d'accompagnement sportif conçue pour faciliter l'intégration d'une activité physique régulière dans votre quotidien. Le maintien d'un entraînement de 30 minutes par jour est un facteur déterminant pour l'amélioration de la santé cardiovasculaire, le renforcement musculaire et la régulation du métabolisme.</p>
+                        <p>Cette plateforme s'adresse aussi bien aux débutants qu'aux sportifs confirmés en proposant des programmes adaptés et automatisés. Chaque séance est structurée pour cibler des groupes musculaires spécifiques (Haut du corps, Bas du corps, Sangle abdominale) afin de garantir un développement harmonieux et une récupération optimale.</p>
+                        <p>L'utilisation est simplifiée : après avoir renseigné vos informations, l'application gère l'alternance entre les phases d'effort et de repos. Le strict respect des temps indiqués permet d'optimiser l'intensité de l'entraînement pour obtenir des résultats tangibles sur la durée.</p>
+                        <p class="text-right font-black text-slate-900 uppercase mt-4">Conçu par Koussy</p>
+                    </div>
+                    <button onclick="hideAllSections()" class="w-full bg-slate-800 text-white font-black p-3 rounded-xl uppercase text-[9px] tracking-widest">Fermer</button>
+                </div>
+            </div>
+
+            <div id="section-contact" class="section-overlay px-6 bg-white border-b border-slate-100">
+                <div class="pt-6 space-y-4 text-center">
+                    <h3 class="text-xs font-black text-slate-800 uppercase tracking-widest">Assistance et Support</h3>
+                    <p class="text-xs text-slate-500">Pour toute question relative au fonctionnement de l'application ou pour faire part de vos retours, vous pouvez contacter l'administrateur par voie électronique.</p>
+                    <div class="p-6 bg-slate-50 rounded-2xl border border-slate-200">
+                        <p class="text-[10px] text-slate-400 uppercase font-bold mb-1">Adresse de contact :</p>
+                        <p class="text-sm font-black text-blue-600">koussy@gmail.com</p>
+                    </div>
+                    <button onclick="hideAllSections()" class="w-full bg-slate-800 text-white font-black p-3 rounded-xl uppercase text-[9px] tracking-widest">Retour</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Affichage principal -->
+        <div id="main-content">
+            <div class="timer-card p-6 text-white">
+                <div class="flex justify-between items-center mb-4">
+                    <h1 id="display-day-name" class="text-2xl font-black uppercase tracking-tighter">CHARGEMENT...</h1>
+                    <div class="bg-white/10 px-3 py-1 rounded-xl border border-white/10 flex flex-col items-center">
+                        <span class="text-[7px] font-bold text-slate-400 uppercase tracking-widest">Temps restant</span>
+                        <span id="global-timer" class="text-sm font-bold font-mono text-blue-400">30:00</span>
+                    </div>
+                </div>
+                <div class="bg-slate-800/50 rounded-3xl p-6 text-center border border-white/5 relative">
+                    <div id="status-label" class="text-blue-500 text-[10px] font-black uppercase tracking-[0.2em] mb-2">PRÊT ?</div>
+                    <div id="main-timer" class="text-5xl font-black font-mono tracking-tighter tabular-nums mb-4">00:00</div>
+                    <button id="master-btn" onclick="toggleWorkout()" class="w-full bg-white text-slate-900 py-3 rounded-2xl font-black uppercase text-xs tracking-widest active:scale-95 transition-transform shadow-lg">Lancer la séance</button>
+                </div>
+            </div>
+
+            <div id="date-selector" class="flex overflow-x-auto p-4 bg-slate-50 border-b gap-3 scrollbar-hide"></div>
+
+            <div id="program-body" class="p-6 space-y-10 max-h-[480px] overflow-y-auto pb-24 flex-grow">
+                <div id="s-group-1">
+                    <div class="flex items-center gap-2 mb-4"><span id="badge-1" class="bg-slate-800 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase">Session 1</span><div class="h-px flex-1 bg-slate-100"></div></div>
+                    <div id="exercise-container-1" class="space-y-3"></div>
+                </div>
+                <div id="s-group-2">
+                    <div class="flex items-center gap-2 mb-4"><span id="badge-2" class="bg-slate-100 text-slate-400 text-[9px] font-black px-3 py-1 rounded-full uppercase">Session 2</span><div class="h-px flex-1 bg-slate-100"></div></div>
+                    <div id="exercise-container-2" class="space-y-3"></div>
+                </div>
+                <div id="s-group-3">
+                    <div class="flex items-center gap-2 mb-4"><span id="badge-3" class="bg-slate-100 text-slate-400 text-[9px] font-black px-3 py-1 rounded-full uppercase">Session 3</span><div class="h-px flex-1 bg-slate-100"></div></div>
+                    <div id="exercise-container-3" class="space-y-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pied de page -->
+        <div class="p-6 bg-white border-t flex flex-col items-center justify-center gap-1 shrink-0 z-10">
+            <div class="text-[11px] font-black text-slate-900 tracking-[0.3em] uppercase">GYM30</div>
+            <div class="text-[9px] font-bold text-slate-400 uppercase tracking-[0.1em]">by Koussy</div>
+        </div>
+    </div>
+
+    <script>
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playSound(type) {
+            audioCtx.resume();
+            const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+            o.connect(g); g.connect(audioCtx.destination);
+            if (type === 'start') {
+                o.frequency.setValueAtTime(880, audioCtx.currentTime);
+                g.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                o.start(); o.stop(audioCtx.currentTime + 0.3);
+            } else {
+                [660, 440].forEach((f, i) => {
+                    const o2 = audioCtx.createOscillator(); const g2 = audioCtx.createGain();
+                    o2.connect(g2); g2.connect(audioCtx.destination);
+                    o2.frequency.setValueAtTime(f, audioCtx.currentTime + (i * 0.1));
+                    g2.gain.setValueAtTime(0.08, audioCtx.currentTime + (i * 0.1));
+                    o2.start(audioCtx.currentTime + (i * 0.1)); o2.stop(audioCtx.currentTime + (i * 0.1) + 0.2);
+                });
+            }
+        }
+
+        const EX_DATABASE = {
+            push: [
+                { n: "Pompes Classiques", d: "Position de départ : mains au sol légèrement plus larges que la largeur des épaules, corps parfaitement aligné de la tête aux talons. Exécution : descendez la poitrine vers le sol en fléchissant les bras jusqu'à ce que vos coudes forment un angle de 90 degrés. Maintenez les abdominaux et les fessiers contractés pour éviter de creuser le dos. Remontez en poussant fortement sur les paumes.", i: "💪" },
+                { n: "Dips Profonds", d: "Matériel : utilisez une chaise stable ou un banc. Placez vos mains sur le bord du support, jambes tendues ou légèrement fléchies devant vous. Exécution : descendez votre bassin vers le sol en gardant le dos proche du support. Les coudes doivent rester parallèles et se diriger vers l'arrière, sans s'écarter. Descendez jusqu'à ce que les bras soient parallèles au sol, puis remontez par la force des triceps.", i: "🪑" },
+                { n: "Pompes Diamant", d: "Variante avancée : placez vos mains sous la poitrine de manière à ce que vos pouces et index forment un diamant. Exécution : la descente s'effectue lentement, en gardant les coudes le long du corps. Cette variante sollicite intensément les triceps et la partie interne des pectoraux. Si l'exercice est trop difficile, posez les genoux au sol.", i: "💎" },
+                { n: "Pompes Inclinées", d: "Installation : mains posées sur une surface surélevée. Cette inclinaison réduit la charge du poids du corps et cible davantage la partie inférieure des pectoraux. Gardez le corps bien droit, sans lever les fesses. Descendez jusqu'à effleurer le support avec votre buste, puis remontez.", i: "📈" }
+            ],
+            legs: [
+                { n: "Squats Contrôlés", d: "Position : pieds largeur d'épaules. Exécution : initiez le mouvement en poussant les hanches vers l'arrière comme si vous alliez vous asseoir. Gardez le poids sur les talons et le buste le plus droit possible. Descendez jusqu'à ce que vos cuisses soient au moins parallèles au sol. Remontez en contractant les fessiers.", i: "🦵" },
+                { n: "Fentes Alternées", d: "Mouvement : faites un grand pas vers l'avant. Descendez le genou arrière verticalement vers le sol jusqu'à ce que les deux genoux forment des angles de 90 degrés. Le genou avant doit rester aligné avec la cheville. Poussez sur votre jambe avant pour revenir à la position initiale.", i: "🚶" },
+                { n: "Chaise Statique", d: "Position : dos plaqué contre un mur, descendez en position de squat jusqu'à ce que vos jambes forment un angle droit. Maintenez la position sans bouger. Les mains ne doivent pas prendre appui sur les cuisses. Concentrez-vous sur votre respiration pour tenir la durée de l'effort.", i: "🧱" },
+                { n: "Squats Explosifs", d: "Exécution : commencez par un squat classique contrôlé. Arrivé en bas du mouvement, poussez de manière explosive pour effectuer un saut vertical. Pendant le saut, cherchez l'extension maximale des hanches. Amortissez la réception avec souplesse sur la pointe des pieds.", i: "🚀" }
+            ],
+            core: [
+                { n: "Planche Commando", d: "Départ : position de planche sur les avant-bras. Exécution : placez une main à l'endroit de votre coude pour passer en position de pompes, puis l'autre. Redescendez ensuite sur les avant-bras. Gardez les hanches le plus stables possible, sans qu'elles ne basculent de gauche à droite.", i: "🛡️" },
+                { n: "Crunches Abdominaux", d: "Position : allongé sur le dos, genoux pliés, pieds au sol. Exécution : placez vos mains derrière les oreilles. Contractez vos abdominaux pour décoller uniquement les omoplates du sol tout en expirant. Regardez vers le haut pour garder les cervicales alignées. Revenez lentement.", i: "🔥" },
+                { n: "Levers de Jambes", d: "Position : allongé sur le dos, mains à plat sous les fesses. Exécution : gardez les jambes tendues et levez-les ensemble jusqu'à la verticale. Redescendez-les lentement en contrôlant la descente. Arrêtez-vous à quelques centimètres du sol sans jamais le toucher ni cambrer le dos.", i: "📏" },
+                { n: "Mountain Climbers", d: "Position : en appui sur les mains comme pour faire des pompes. Exécution : ramenez alternativement vos genoux vers la poitrine de manière dynamique, comme si vous couriez en position horizontale. Gardez le bassin bas et aligné avec le buste.", i: "🏔️" }
+            ]
+        };
+
+        const DAYS_FR = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
+        let currentDayName = DAYS_FR[new Date().getDay()];
+        let isRunning = false, isResting = false;
+        let currentExIdx = 0, currentSeries = 1, timerVal = 0, globalTimerVal = 1800;
+        let interval, sessionProgram = [];
+        let activeDays = { "Lundi": true, "Mardi": true, "Mercredi": true, "Jeudi": true, "Vendredi": true, "Samedi": false, "Dimanche": false };
+
+        function init() {
+            const saved = localStorage.getItem('gym30_v8_cfg');
+            if (saved) {
+                const d = JSON.parse(saved);
+                document.getElementById('p-age').value = d.age || "00";
+                document.getElementById('p-weight').value = d.weight || "00";
+                document.getElementById('p-level').value = d.level || "moyen";
+                if(d.activeDays) activeDays = d.activeDays;
+            }
+            renderDaysSelector();
+            initDates();
+        }
+
+        function renderDaysSelector() {
+            const container = document.getElementById('days-selector-container');
+            container.innerHTML = "";
+            const order = ["Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi", "Dimanche"];
+            order.forEach(day => {
+                container.innerHTML += `
+                    <div class="flex items-center justify-between">
+                        <span class="text-[11px] font-bold text-slate-700">${day}</span>
+                        <input type="checkbox" id="check-${day}" ${activeDays[day] ? 'checked' : ''} class="day-checkbox">
+                    </div>`;
+            });
+        }
+
+        function toggleMenu() {
+            const m = document.getElementById('main-menu');
+            m.style.maxHeight = (m.style.maxHeight !== "0px" && m.style.maxHeight) ? "0px" : "250px";
+        }
+
+        function showSection(type) {
+            hideAllSections();
+            document.getElementById('section-' + type).classList.add('active');
+            toggleMenu();
+        }
+
+        function hideAllSections() { document.querySelectorAll('.section-overlay').forEach(s => s.classList.remove('active')); }
+
+        function saveProfile() {
+            const newActiveDays = {};
+            DAYS_FR.forEach(day => { newActiveDays[day] = document.getElementById('check-' + day).checked; });
+            activeDays = newActiveDays;
+            localStorage.setItem('gym30_v8_cfg', JSON.stringify({
+                age: document.getElementById('p-age').value,
+                weight: document.getElementById('p-weight').value,
+                level: document.getElementById('p-level').value,
+                activeDays: activeDays
+            }));
+            hideAllSections();
+            generateProgram();
+        }
+
+        function initDates() {
+            const container = document.getElementById('date-selector');
+            const now = new Date(); container.innerHTML = "";
+            for (let i = 0; i < 7; i++) {
+                let d = new Date(); d.setDate(now.getDate() - now.getDay() + i);
+                let dayName = DAYS_FR[d.getDay()], dateNum = d.getDate(), isToday = dayName === currentDayName;
+                container.innerHTML += `<button onclick="changeDay('${dayName}', this)" class="date-btn min-w-[55px] flex flex-col items-center p-3 rounded-2xl transition-all-custom bg-white text-slate-400 border border-slate-100 ${isToday ? 'date-active' : ''}"><span class="text-[8px] uppercase font-black mb-1">${dayName.substring(0, 3)}</span><span class="text-base font-black">${dateNum}</span></button>`;
+            }
+            generateProgram();
+        }
+
+        function changeDay(name, btn) {
+            if(isRunning) return;
+            currentDayName = name;
+            document.querySelectorAll('.date-btn').forEach(b => b.classList.remove('date-active'));
+            btn.classList.add('date-active');
+            generateProgram();
+        }
+
+        function generateProgram() {
+            const level = document.getElementById('p-level').value;
+            let timeWork = 100, timeRest = 55;
+            if (level === 'debutant') { timeWork = 80; timeRest = 76; }
+            else if (level === 'expert') { timeWork = 120; timeRest = 32; }
+
+            document.getElementById('display-day-name').innerText = currentDayName;
+
+            if (!activeDays[currentDayName]) {
+                sessionProgram = []; updateUI("Repos"); 
+                document.getElementById('status-label').innerText = "RÉCUPÉRATION ACTIVÉE";
+                return; 
+            }
+
+            let category = "core", target = "Abdominaux & Dos";
+            if (["Lundi", "Jeudi"].includes(currentDayName)) { category = "push"; target = "Haut du Corps"; }
+            else if (["Mardi", "Vendredi"].includes(currentDayName)) { category = "legs"; target = "Jambes & Fessiers"; }
+            
+            let pool = [...EX_DATABASE[category]];
+            sessionProgram = pool.sort(() => 0.5 - Math.random()).slice(0, 4).map(ex => ({ ...ex, work: timeWork, rest: timeRest }));
+            updateUI(target);
+        }
+
+        function updateUI(target) {
+            for (let s = 1; s <= 3; s++) {
+                const container = document.getElementById(`exercise-container-${s}`); container.innerHTML = "";
+                if (sessionProgram.length === 0) { 
+                    container.innerHTML = `<div class="p-6 text-center text-slate-300 text-xs italic">Journée de repos configurée.</div>`;
+                } else {
+                    sessionProgram.forEach((ex, idx) => {
+                        container.innerHTML += `
+                            <div id="ex-card-s${s}-${idx}" class="border border-slate-100 bg-white rounded-2xl overflow-hidden transition-all-custom">
+                                <div onclick="toggleExpand(${s}, ${idx})" class="p-4 flex items-center gap-3 cursor-pointer">
+                                    <div class="text-2xl">${ex.i}</div>
+                                    <div class="flex-1">
+                                        <h4 class="font-black text-slate-800 text-[13px] uppercase tracking-tight">${ex.n}</h4>
+                                        <span class="text-[9px] text-blue-500 font-bold uppercase">${ex.work}s effort</span>
+                                    </div>
+                                    <div id="arrow-s${s}-${idx}" class="text-slate-300 transition-transform">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
+                                    </div>
+                                </div>
+                                <div id="desc-s${s}-${idx}" class="max-h-0 overflow-hidden bg-slate-50 transition-all-custom">
+                                    <div class="p-5 pt-0 text-[12px] text-slate-600 leading-relaxed border-t border-slate-100/50 text-justify">
+                                        <p class="font-black text-slate-900 mb-2 uppercase text-[10px] tracking-wide">Guide d'exécution :</p>
+                                        ${ex.d}
+                                    </div>
+                                </div>
+                            </div>`;
+                    });
+                }
+            }
+        }
+
+        function toggleExpand(s, idx, forceState = null) {
+            const desc = document.getElementById(`desc-s${s}-${idx}`), arrow = document.getElementById(`arrow-s${s}-${idx}`);
+            const isOpen = forceState !== null ? !forceState : (desc.style.maxHeight !== "0px" && desc.style.maxHeight);
+            desc.style.maxHeight = isOpen ? "0px" : "400px"; 
+            arrow.style.transform = isOpen ? "rotate(0deg)" : "rotate(180deg)";
+        }
+
+        function toggleWorkout() {
+            if (isRunning) { clearInterval(interval); isRunning = false; document.getElementById('master-btn').innerText = "REPRENDRE"; }
+            else { if (sessionProgram.length === 0) return; isRunning = true; document.getElementById('master-btn').innerText = "PAUSE"; startLoop(); }
+        }
+
+        function startLoop() {
+            if (currentExIdx >= sessionProgram.length) {
+                if (currentSeries < 3) { currentSeries++; currentExIdx = 0; updateBadges(); }
+                else { finish(); return; }
+            }
+            const ex = sessionProgram[currentExIdx], cardId = `ex-card-s${currentSeries}-${currentExIdx}`;
+            
+            if (currentExIdx > 0) toggleExpand(currentSeries, currentExIdx - 1, false);
+            else if (currentSeries > 1) toggleExpand(currentSeries - 1, sessionProgram.length - 1, false);
+
+            document.querySelectorAll('[id^="ex-card-"]').forEach(c => c.classList.remove('ex-active'));
+            const currentCard = document.getElementById(cardId);
+            if(currentCard) {
+                currentCard.classList.add('ex-active');
+                currentCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+
+            if (!isResting) {
+                toggleExpand(currentSeries, currentExIdx, true);
+                timerVal = ex.work; document.getElementById('status-label').innerText = "EFFORT EN COURS";
+                document.getElementById('main-timer').classList.replace('text-blue-400', 'text-white');
+                playSound('start');
+            } else {
+                timerVal = ex.rest; document.getElementById('status-label').innerText = "PHASE DE RÉCUPÉRATION";
+                document.getElementById('main-timer').classList.replace('text-white', 'text-blue-400');
+            }
+            tick();
+        }
+
+        function tick() {
+            interval = setInterval(() => {
+                timerVal--; globalTimerVal--; updateDisplay();
+                if (timerVal <= 0) {
+                    clearInterval(interval);
+                    if (!isResting) {
+                        const cardId = `ex-card-s${currentSeries}-${currentExIdx}`;
+                        const card = document.getElementById(cardId);
+                        if(card) card.classList.replace('ex-active', 'ex-done');
+                        playSound('stop'); isResting = true; startLoop();
+                    } else {
+                        isResting = false; currentExIdx++; startLoop();
+                    }
+                }
+                if (globalTimerVal <= 0) finish();
+            }, 1000);
+        }
+
+        function updateDisplay() {
+            const m = Math.floor(timerVal/60), s = timerVal%60;
+            document.getElementById('main-timer').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            const gm = Math.max(0, Math.floor(globalTimerVal/60)), gs = Math.max(0, globalTimerVal%60);
+            document.getElementById('global-timer').innerText = `${gm.toString().padStart(2,'0')}:${gs.toString().padStart(2,'0')}`;
+        }
+
+        function updateBadges() {
+            for(let i=1; i<=3; i++) {
+                const b = document.getElementById(`badge-${i}`);
+                if(i === currentSeries) b.className = "bg-slate-800 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase";
+                else if(i < currentSeries) b.className = "bg-emerald-500 text-white text-[9px] font-black px-3 py-1 rounded-full uppercase";
+            }
+        }
+
+        function finish() { clearInterval(interval); isRunning = false; document.getElementById('status-label').innerText = "SÉANCE TERMINÉE"; }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
+
